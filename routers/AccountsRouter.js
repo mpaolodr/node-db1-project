@@ -6,7 +6,7 @@ router.get("/", async (req, res) => {
   const sortBy = req.query.sortby;
   const sortDir = req.query.sortdir;
 
-  if (req.query) {
+  if (limit || sortBy || sortDir) {
     try {
       const accts = await db("accounts")
         .limit(limit)
@@ -38,6 +38,28 @@ router.get("/:id", async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ errorMessage: "ID not valid" });
+  }
+});
+
+router.post("/", async (req, res) => {
+  const accData = req.body;
+
+  if (accData.name && accData.budget) {
+    try {
+      const [newAcc] = await db("accounts").insert(accData, "id");
+
+      try {
+        const createdAcc = await db("accounts").where("id", newAcc);
+
+        res.status(200).json(createdAcc);
+      } catch (err) {
+        res.status(500).json({ errorMessage: "Account creation failed" });
+      }
+    } catch (err) {
+      res.status(500).json({ errorMessage: err.message });
+    }
+  } else {
+    res.status(400).json({ errorMessage: "Missing Fields" });
   }
 });
 
