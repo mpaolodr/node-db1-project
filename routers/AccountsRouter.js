@@ -63,4 +63,38 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const updatedData = req.body;
+
+  if (updatedData.name && updatedData.budget) {
+    try {
+      const updated = await db("accounts")
+        .where("id", id)
+        .update(updatedData);
+      const [updatedAcc] = await db("accounts").where("id", id);
+      res.status(200).json(updatedAcc);
+    } catch (err) {
+      res.status(500).json({ errorMessage: err.message });
+    }
+  } else {
+    res.status(500).json({ errorMessage: "Missing Fields" });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [removedAcc] = await db("accounts").where({ id: id });
+    const successDel = await db("accounts")
+      .where({ id: id })
+      .del();
+
+    res.status(200).json(removedAcc);
+  } catch (err) {
+    res.status(500).json({ errorMessage: err.message });
+  }
+});
+
 module.exports = router;
