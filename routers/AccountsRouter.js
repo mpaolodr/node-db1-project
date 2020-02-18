@@ -8,10 +8,26 @@ router.get("/", async (req, res) => {
 
   if (limit || sortBy || sortDir) {
     try {
-      const accts = await db("accounts")
-        .limit(limit)
-        .orderBy(sortBy, sortDir);
-      res.status(200).json(accts);
+      // limit query only
+      if (limit && !sortBy && !sortDir) {
+        const accts = await db("accounts").limit(limit);
+        res.status(200).json(accts);
+      }
+      // sortby query only
+      else if (sortBy && !limit) {
+        const accts = await db("accounts").orderBy(
+          sortBy,
+          sortDir ? sortDir : "asc"
+        );
+        res.status(200).json(accts);
+      }
+      // limit and sortby and checking if sortdir exists
+      else if (limit && sortBy) {
+        const accts = await db("accounts")
+          .limit(limit)
+          .orderBy(sortBy, sortDir ? sortDir : "asc");
+        res.status(200).json(accts);
+      }
     } catch (err) {
       res.status(500).json({ errorMessage: err.message });
     }
